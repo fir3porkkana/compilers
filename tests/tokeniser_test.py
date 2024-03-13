@@ -32,3 +32,5 @@ def test_tokeniser() -> None:
     assert tokenise("moi, moi") == [Token("identifier", "moi", L), Token("punctuation", ",", L), Token("identifier", "moi", L)]
 
     assert tokenise("moi,; hallo;") == [Token("identifier", "moi", L), Token("punctuation", ",", L), Token("punctuation", ";", L), Token("identifier", "hallo", L), Token("punctuation", ";", L)]
+
+    assert tokenise("2 < 4 - 1") == [Token("int_literal", "2", L), Token("operator", "<", L), Token("int_literal", "4", L), Token("operator", "-", L), Token("int_literal", "1", L)]

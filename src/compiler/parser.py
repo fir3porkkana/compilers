@@ -17,6 +17,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
             )
         
     def consume(expected: str | list[str] | None = None) -> Token:
+        # print(f"consume invoked")
         nonlocal position
         token = peek()
         if isinstance(expected, str) and token.text != expected:
@@ -40,9 +41,12 @@ def parse(tokens: list[Token]) -> ast.Expression:
         return ast.Identifier(token.text)
     
     def parse_operator() -> ast.Operator:
+        # print(f"parse_operator invoked")
+
         if peek().type != "operator":
             raise Exception(f"@{peek().location}: expected an identifier, got '{peek().type}' instead")
         token = consume()
+        # print(f"token text: {token.text}")
         return ast.Operator(token.text)
     
     def parse_parenthesised() -> ast.Expression:
@@ -98,13 +102,28 @@ def parse(tokens: list[Token]) -> ast.Expression:
             )
         return expression
         
-    def parse_expression() -> ast.Expression:
+    def parse_polynomial() -> ast.Expression:
         expression = parse_term()
         
         while peek().text in ["-", "+"]:
             operator = parse_term()
 
             right_expression = parse_term()
+
+            expression = ast.BinaryOperation(
+                expression,
+                operator,
+                right_expression
+            )
+        return expression
+    
+    def parse_expression() -> ast.Expression:
+        expression = parse_polynomial()
+
+        while peek().text in ["<"]:
+            operator = parse_term()
+
+            right_expression = parse_polynomial()
 
             expression = ast.BinaryOperation(
                 expression,
