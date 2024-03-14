@@ -49,11 +49,6 @@ def tokenise(source_string: str) -> list[Token]:
     result: list[Token] = []
 
     while position < len(source_string):
-        # print("wat doink")
-        # print("¿no print?")
-        # print(f"position: {position}")
-        # temp = len(source_string)
-        # print(f"len(source_string): {temp}")
         
         match = newline_regex.match(source_string, position)
         if match is not None:
@@ -76,7 +71,6 @@ def tokenise(source_string: str) -> list[Token]:
 
         match = integer_regex.match(source_string, position)
         if match is not None:
-            # print(f"integer: {match}")
             result.append(Token("int_literal", source_string[position:match.end()], Location(line, column)))
             column += match.end() - position
             position = match.end()

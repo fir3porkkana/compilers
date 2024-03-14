@@ -17,7 +17,6 @@ def parse(tokens: list[Token]) -> ast.Expression:
             )
         
     def consume(expected: str | list[str] | None = None) -> Token:
-        # print(f"consume invoked")
         nonlocal position
         token = peek()
         if isinstance(expected, str) and token.text != expected:
@@ -41,13 +40,26 @@ def parse(tokens: list[Token]) -> ast.Expression:
         return ast.Identifier(token.text)
     
     def parse_operator() -> ast.Operator:
-        # print(f"parse_operator invoked")
-
         if peek().type != "operator":
             raise Exception(f"@{peek().location}: expected an identifier, got '{peek().type}' instead")
         token = consume()
-        # print(f"token text: {token.text}")
         return ast.Operator(token.text)
+    
+
+    def parse_identifier_or_function_call() -> ast.Identifier | ast.FunctionCall:
+        identifier = parse_identifier()
+        if peek().text == "(":
+            # must be a function call
+            consume("(")
+            argument_list = [parse_expression()]
+            while peek().text == ",":
+                consume(",")
+                # arguments can be expressions themselves
+                argument_list.append(parse_expression())
+            consume(")")
+            return ast.FunctionCall(name=identifier, argument_list=argument_list)
+
+        return identifier
     
     def parse_parenthesised() -> ast.Expression:
         consume("(")
@@ -79,7 +91,7 @@ def parse(tokens: list[Token]) -> ast.Expression:
         elif peek().type == "int_literal":
             return parse_int_literal()
         elif peek().type == "identifier":
-            return parse_identifier()
+            return parse_identifier_or_function_call()
         elif peek().type == "operator":
             return parse_operator()
         else:

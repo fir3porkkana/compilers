@@ -1,6 +1,6 @@
 from compiler.tokeniser import Location, tokenise
 from compiler.parser import parse
-from compiler.ast import Identifier, Literal, Operator, BinaryOperation, IfExpression
+from compiler.ast import FunctionCall, Identifier, Literal, Operator, BinaryOperation, IfExpression
 
 L = Location(0,0, True)
 
@@ -11,7 +11,7 @@ def test_parse_binary_math_expression() -> None:
         right=Literal(2)
         )
     
-def test_parsing_single_token() -> None:
+def test_parse_single_token() -> None:
     assert parse(tokenise("1")) == Literal(1)
     
 def test_parse_garbage_math_expression() -> None:
@@ -21,7 +21,7 @@ def test_parse_garbage_math_expression() -> None:
     except Exception:
         pass
 
-def test_empty_token_list() -> None:
+def test_parse_empty_token_list() -> None:
     try:
         parse([])
     except Exception:
@@ -173,4 +173,30 @@ def test_parse_nested_if_expressions_as_a_subexpression_with_both_elses() -> Non
             ),
             else_clause=Identifier("ambiguity")
         )
+    )
+
+def test_parse_simple_function_call() -> None:
+    assert parse(tokenise("function(first, second)")) == FunctionCall(
+        name=Identifier("function"),
+        argument_list=[Identifier("first"), Identifier("second")]
+    )
+
+def test_parse_function_call_with_function_call_as_arg() -> None:
+    assert parse(tokenise("function(differentFunction(first_arg, second_arg), third_arg)")) == FunctionCall(
+        name=Identifier("function"),
+        argument_list=[FunctionCall(
+            name=Identifier("differentFunction"),
+            argument_list=[Identifier("first_arg"), Identifier("second_arg")]
+    ),
+    Identifier("third_arg")]
+    )
+
+def test_parse_function_call_with_binary_operation() -> None:
+    assert parse(tokenise("function(1, 2 * 3)")) == FunctionCall(
+        name=Identifier("function"),
+        argument_list=[Literal(1), BinaryOperation(
+            left=Literal(2),
+            operator=Operator("*"),
+            right=Literal(3)
+            )]
     )
